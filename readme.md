@@ -32,6 +32,14 @@ Using `maxUnavailable` provides several advantages in regions with limited capac
 
 ## Important Notes
 
+### Cannot be Combined
+
+Use of both a `maxSurge` > 0 and a `maxUnavailable` > 0 is not allowed - only one must have a value greater than 0 and the other must be 0. Otherwise, the following error will occur:
+
+```powershell
+The value of parameter agentPoolProfile.upgradeSettings.maxUnavailable is invalid. Error details: maxSurge and maxUnavailable cannot both bigger than 0.
+```
+
 ### User Node Pools Only
 The use of `maxUnavailable` and `maxSurge` can only be used on user node pools - system node pools require surge nodes to be available for upgrades due to the criticality of the workloads running on the system node pools. System node pools require that `maxSurge` must be greater than 0 and `maxUnavailable` cannot be 0.
 
@@ -68,7 +76,29 @@ Run `.\setup.ps1` to create:
 |----------|-------------|----------------|-----------------|----------|
 | **maxSurge=5, maxUnavailable=0** | 5 additional nodes | Provision → Migrate → Decommission | High | Unlimited capacity regions |
 | **maxSurge=0, maxUnavailable=2** | None | Drain → Upgrade → Restore | None | Capacity-constrained regions |
-| **maxSurge=2, maxUnavailable=1** | 2 additional nodes | Hybrid approach | Medium | Balanced approach |
+
+## Upgrade Commands
+
+### Control Plane and Node Pool
+
+These commands manually update the control plane and then individual node pools. This example updates the control plane to version 1.33 and then the "userpool" to 1.33. Be sure that the max version skew is no more than 3 versions between the control plane and node kubelet.
+
+```powershell
+# upgrade the control plane AKS version
+az aks upgrade -n aksmaxunavailable -g rg-aks-maxunavailable -k 1.33 --control-plane-only
+
+# upgrade the user node pool
+az aks nodepool upgrade -n userpool --cluster-name aksmaxunavailable -g rg-aks-maxunavailable -k 1.33
+```
+
+### Node OS Upgrade
+
+These commands update only the node OS image and not the Kubernetes version. The node OS version is tied to the Kubernetes version, however, and the latest possible node OS version for older Kubernetes versions may not be available. 
+
+```powershell
+# upgrade just the node OS images
+az aks nodepool upgrade --node-image-only -n userpool --cluster-name aksmaxunavailable -g rg-aks-maxunavailable
+```
 
 ## Important Considerations
 
