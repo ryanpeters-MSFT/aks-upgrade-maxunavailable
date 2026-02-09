@@ -41,7 +41,7 @@ The value of parameter agentPoolProfile.upgradeSettings.maxUnavailable is invali
 ```
 
 ### User Node Pools Only
-The use of `maxUnavailable` and `maxSurge` can only be used on user node pools - system node pools require surge nodes to be available for upgrades due to the criticality of the workloads running on the system node pools. System node pools require that `maxSurge` must be greater than 0 and `maxUnavailable` cannot be 0.
+The use of `maxUnavailable` and `maxSurge` can only be used on user node pools - system node pools require surge nodes to be available for upgrades due to the criticality of the workloads running on the system node pools. For system node pools, the value of `maxSurge` must be greater than 0 and `maxUnavailable` cannot be modified (remaining at 0).
 
 ### Pod Disruption and Available Capacity
 
